@@ -1,2 +1,2 @@
 # epiphip
-epitope predictor trained on phip-seq
+collection of notebooks exploring epitope prediction using phip-seq
