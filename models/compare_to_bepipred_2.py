@@ -38,6 +38,7 @@ def get_vectorized_sequences(list_sequences):
 
 
 
+
 df = pandas.read_csv("{}/data/train.20171126.csv".format(os.path.dirname(os.path.realpath(__file__))))
 df["binary_label"] = df.ratio > 0.5
 
@@ -66,7 +67,7 @@ from sklearn.model_selection import train_test_split
 combined_data = bepi_vectorized
 combined_classification = classification
 
-X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_classification, test_size=0.9, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_classification, test_size=0.8, random_state=0)
 
 scores = cross_val_score(LogisticRegression(solver='lbfgs'), X_train, y_train, cv=5, scoring='roc_auc')
 print("cross_val_score for bepipred: {}".format(scores))
@@ -79,7 +80,7 @@ print("Roc score on test bepipred data alone: {}".format(roc_auc))
 
 combined_data = vectorized_sequences
 combined_classification = [a for a in df.binary_label.values]
-X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_classification, test_size=0.9, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_classification, test_size=0.8, random_state=0)
 
 scores = cross_val_score(LogisticRegression(solver='lbfgs'), X_train, y_train, cv=5, scoring='roc_auc')
 print("cross_val_score for phip-seq: {}".format(scores))
@@ -95,7 +96,7 @@ print("Roc score on test phip-seq data alone: {}".format(roc_auc))
 combined_data = vectorized_sequences + bepi_vectorized
 combined_classification = [a for a in df.binary_label.values] + classification
 
-X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_classification, test_size=0.9, random_state=0)
+X_train, X_test, y_train, y_test = train_test_split(combined_data, combined_classification, test_size=0.8, random_state=0)
 
 scores = cross_val_score(LogisticRegression(solver='lbfgs'), X_train, y_train, cv=5, scoring='roc_auc')
 print("cross_val_score for combined: {}".format(scores))
@@ -104,4 +105,25 @@ model.fit(X_train, y_train)
 
 roc_auc = sklearn.metrics.roc_auc_score(y_test, model.predict_proba(X_test)[:,1])
 print("Roc score on test data for combined: {}".format(roc_auc))
+
+
+
+
+#use 
+
+
+bepi_X_train, bepi_X_test, bepi_y_train, bepi_y_test = train_test_split(bepi_vectorized, classification, test_size=0.8, random_state=0)
+phip_X_train, phip_X_test, phip_y_train, phip_y_test = train_test_split(vectorized_sequences, [a for a in df.binary_label.values], test_size=0.8, random_state=0)
+
+
+
+combined_data = bepi_X_train + phip_X_train
+combined_classification = bepi_y_train + phip_y_train
+model.fit(combined_data, combined_classification)
+
+roc_auc = sklearn.metrics.roc_auc_score(bepi_y_test, model.predict_proba(bepi_X_test)[:,1])
+print("Roc score on bepi_test data for combined: {}".format(roc_auc))
+
+roc_auc = sklearn.metrics.roc_auc_score(phip_y_test, model.predict_proba(phip_X_test)[:,1])
+print("Roc score on phip_test data for combined: {}".format(roc_auc))
 
